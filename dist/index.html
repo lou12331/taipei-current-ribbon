@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f36a32">
+  <meta name="description" content="洋流來襲，打包垃圾也要順。用橘色洋流飄帶綁好垃圾袋，讓臺北順起來。">
+  <title>洋流飄帶練習室</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="./" aria-label="洋流飄帶練習室首頁"><svg viewBox="0 0 40 40" aria-hidden="true"><g style="stroke:var(--ink)"><path d="M18.5 14 14 6.5M20 13.5V4M21.5 14 26 6.5"/><path d="M18.5 15C9 18 5 26 7.5 32c2 5 23 5 25 0 2.5-6-1.5-14-11-17"/><path d="M14.5 22.5 13 30M25 23l1.5 6"/></g><path d="M20 15c-4-5-9-4-8 0s5 2 8 0Zm0 0c4-5 9-4 8 0s-5 2-8 0Zm0 0-4 7m4-7 4 7"/></svg><span>洋流<span class="brand-en">TAIPEI CURRENT / PACK &amp; FLOW</span></span></a>
+  <nav class="header-right"><span class="edition">TAIPEI 2026　/　垃圾打包篇</span><button id="sound" class="icon-button" aria-label="開啟環境音" title="開啟環境音"><svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5Zm4 4 5 6m0-6-5 6"/></svg></button><button id="inspiration" class="help-button inspiration-button">靈感筆記 ↗</button><button id="help" class="help-button">操作說明 <span>↗</span></button></nav>
+</header>
+<main class="workspace">
+  <div id="scene" aria-label="可旋轉的三維袋子與飄帶場景"><div id="webgl-error" hidden><h2>需要支援 WebGL 的瀏覽器</h2><p>請開啟硬體加速，並重新整理此頁。</p></div></div>
+  <section class="intro" id="intro">
+    <div class="eyebrow"><span class="tiny-line"></span> 洋流來襲 · FUTURE SOON</div>
+    <h1>打包垃圾，<br><span>讓臺北順起來。</span></h1>
+    <p class="intro-copy">袋口卡卡的，綁上洋流飄帶就順了。<br>交叉、收緊、折耳，打包好再出門。</p>
+    <div class="selection-heading"><span>登船口 <i>/</i> 選一只垃圾袋</span><span class="small-label">PICK YOUR BAG</span></div>
+    <div class="bag-options" role="group" aria-label="選擇袋子">
+      <button class="bag-option selected" data-bag="black" aria-pressed="true"><span class="bag-thumb black"><svg viewBox="0 0 60 72"><path d="m17 3 12 5 13-6 7 12-14 9c10 5 21 23 21 35 0 9-12 12-26 12S4 67 4 58c0-12 11-30 21-35l-14-9Z"/><path class="fold" d="m22 30-9 26 18 9m6-37 9 30M15 12l15 10 13-11M29 31l-4 25"/></svg></span><span>經典黑垃圾袋</span><small>厚實・裝一整週</small><span class="selected-dot">✓</span></button>
+      <button class="bag-option" data-bag="blue" aria-pressed="false"><span class="bag-thumb blue"><svg viewBox="0 0 60 72"><path d="m17 3 12 5 13-6 7 12-14 9c10 5 21 23 21 35 0 9-12 12-26 12S4 67 4 58c0-12 11-30 21-35l-14-9Z"/><path class="fold" d="m22 30-9 26 18 9m6-37 9 30M15 12l15 10 13-11M29 31l-4 25"/></svg></span><span>臺北專用袋</span><small>隨袋徵收・分類好</small><span class="selected-dot">✓</span></button>
+      <button class="bag-option" data-bag="linen" aria-pressed="false"><span class="bag-thumb linen"><svg viewBox="0 0 60 72"><path d="m17 3 12 5 13-6 7 12-14 9c10 5 21 23 21 35 0 9-12 12-26 12S4 67 4 58c0-12 11-30 21-35l-14-9Z"/><path class="fold" d="m22 30-9 26 18 9m6-37 9 30M15 12l15 10 13-11M29 31l-4 25"/></svg></span><span>透明垃圾袋</span><small>章東西</small><span class="selected-dot">✓</span></button>
+    </div>
+    <div class="material-note"><span class="swatch"></span><div>洋流飄帶<small>45 公尺外也看得見的橘 / 38 mm</small></div><span class="note-icon">↗</span></div>
+    <button id="start" class="primary-button">登船，開始打包 <span>↗</span></button>
+    <p class="start-note">約 3 分鐘 <span>·</span> 綁好一袋，臺北就順一點</p>
+  </section>
+  <div class="scene-caption" id="scene-caption"><span class="caption-line"></span><span id="bag-caption">01 — 經典黑垃圾袋</span><small id="bag-sub">厚實袋身，一整週的垃圾都裝得下。</small></div>
+  <div class="scene-tools"><button id="rotate" title="旋轉展示" aria-label="開啟自動旋轉">↻</button><span></span><button id="reset-view" title="回到正面" aria-label="回到正面視角"><svg viewBox="0 0 24 24"><path d="m12 3 8 5v8l-8 5-8-5V8l8-5Zm0 9 8-4m-8 4L4 8m8 4v9"/></svg></button></div>
+  <div class="scene-hint" id="scene-hint"><svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="17" rx="5"/><path d="M12 3v6"/></svg> 拖曳旋轉 <span>·</span> 滾輪縮放</div>
+  <aside id="lesson" class="lesson" hidden>
+    <button id="back" class="text-button">← 返回選袋</button>
+    <div class="eyebrow" id="lesson-eyebrow">VOYAGE · 五站航程</div><h1 id="lesson-title">五站航程，<br>一袋打包好。</h1>
+    <p id="lesson-copy" class="intro-copy">從交叉到蝴蝶結，一站一站解鎖，<br>讓卡卡的袋口順起來。</p>
+    <ol id="lesson-list" class="lesson-list"></ol>
+    <div id="lesson-bottom"></div>
+  </aside>
+  <section id="instruction" class="instruction" hidden aria-live="polite"><span class="instruction-number" id="instruction-number">01</span><div><h2 id="instruction-title"></h2><p id="instruction-copy"></p></div><button id="demo" class="text-button">重試本步 ↺</button></section>
+  <section id="play-hud" class="play-hud" hidden aria-label="即時手感儀表"><div class="hud-top"><span id="run-mode">自由練習</span><strong id="run-time">00:00</strong><span id="flow-combo">FLOW ×0</span><small id="slip-count">滑脫 0</small></div><div class="hud-skill"><span id="skill-label">穿帶進度</span><output id="skill-value">0 / 3</output></div><div class="skill-meter" id="skill-meter"><i id="skill-zone" hidden></i><b id="skill-fill"></b></div></section>
+  <div id="handles" class="handles"></div>
+  <section id="adjust" class="adjust-panel" hidden><div class="adjust-heading">出門前，順一下。<small>FINAL CHECK</small></div><label>左側垂帶 <output id="left-value">50 cm</output><input id="left-length" type="range" min="30" max="70" value="50"></label><label>右側垂帶 <output id="right-value">50 cm</output><input id="right-length" type="range" min="30" max="70" value="50"></label><label>結心張力 <output id="tension-value">70%</output><input id="tension" type="range" min="20" max="100" value="70"></label><button id="finish" class="primary-button">打包完成，拎出門 <span>↗</span></button></section>
+  <section id="results" class="results" hidden aria-live="polite"><div class="eyebrow">PACKED · READY TO FLOW</div><h1>垃圾打包好，<br>臺北順起來。</h1><div class="score"><span id="total-score">0</span><small>/ 100</small><span id="score-seal">順起來了</span></div><p id="score-message"></p><div id="run-result" class="run-result"></div><div id="score-details"></div><div class="result-buttons"><button id="again" class="primary-button">再打包一袋 <span>↗</span></button><button id="save-image" class="secondary-button">收藏作品 ↓</button></div><p class="start-note" id="best-score"></p></section>
+  <div id="toast" class="toast" role="status" hidden></div>
+</main>
+<footer class="journey"><div class="journey-label">GARBAGE BAG × BOW <span>垃圾袋 × 蝴蝶結</span></div><ol><li class="active" data-phase="0"><span>01</span> 選袋登船</li><li data-phase="1"><span>02</span> 看懂航線</li><li data-phase="2"><span>03</span> 動手打包</li><li data-phase="3"><span>04</span> 順利出門</li></ol><span class="footer-note">打包垃圾，讓臺北順起來・非官方創作</span></footer>
+<dialog id="help-dialog"><button class="close" aria-label="關閉操作說明">×</button><div class="eyebrow">BOARDING GUIDE</div><h2>上船前，先看航線。</h2><p>選一只垃圾袋，看完五站教學，再動手打包。</p><ul><li>拖曳空白處旋轉袋子，滾輪或雙指縮放，前後左右都看得到袋裡的東西。</li><li>穿帶：按住帶端，依編號穿過所有節點；直接拖到終點無法完成。</li><li>控力：拉進 65–82% 綠區，穩住 0.8 秒後放開。超過 102% 持續 0.25 秒會滑脫。</li><li>雙耳平衡：分別拖左右耳，兩邊拉至 82–110%，差距低於 13%，再按收結。觸控可雙指同時操作。</li><li>自由練習不限時；順手挑戰有 90 秒倒數與連段。滑脫會影響手感分。打開說明或切換分頁時暫停。</li><li>鍵盤可用方向鍵穿點／控力，再按 Enter 放手；雙耳用左右方向鍵調整。需要協助時可按「輔助完成本步」，該步以 55% 手感計分，紀錄另作標示。</li></ul><p class="muted">這是有步驟約束的互動模擬；實際布料仍會因材質而有不同手感。</p><button class="primary-button close-help">了解，出發 <span>↗</span></button></dialog>
+<dialog id="inspiration-dialog"><button class="close-inspiration close" aria-label="關閉靈感筆記">×</button><div class="eyebrow">VISUAL FIELD NOTES / 2026</div><h2>一條飄帶，一股洋流。</h2><p>本作取材自 2026 臺北市長選舉中「台北大洋流」與「台北順起來」的街頭視覺。支持者把橘色洋流飄帶綁在包包上，我們把它綁在垃圾袋上：打包垃圾、綁好袋口，讓日常順起來。這是獨立的非官方創作。</p><div class="keyword-chips"><span>台北大洋流</span><span>台北順起來</span><span>洋流來襲</span><span>洋流飄帶</span><span>登船口</span><span>航程解鎖</span><span>打包垃圾</span><span>Future Soon</span></div><p class="muted">關鍵字出處：<br><a href="https://puma.taipei/taipei-current" target="_blank" rel="noopener noreferrer">官方「台北大洋流」視覺與活動 ↗</a><br><a href="https://udn.com/news/story/124652/9669429" target="_blank" rel="noopener noreferrer">聯合新聞網：競選標語「台北順起來」↗</a><br><a href="https://news.ltn.com.tw/news/politics/breakingnews/5611682" target="_blank" rel="noopener noreferrer">自由時報：洋流飄帶熱潮 ↗</a><br><a href="https://www.cna.com.tw/news/aipl/202610180101.aspx" target="_blank" rel="noopener noreferrer">中央社：競選小物與設計主軸（2026/10/18）↗</a><br><a href="https://www.cna.com.tw/news/aipl/202609020063.aspx" target="_blank" rel="noopener noreferrer">中央社：船舵與洋流意象（2026/09/02）↗</a></p><button class="primary-button close-inspiration">回到練習室 <span>↗</span></button></dialog>
+<dialog id="timeout-dialog"><div class="eyebrow">TIME'S UP</div><h2>這袋還沒綁好。</h2><p>90 秒到了。垃圾放著不會跑，可以再挑戰一次，也可以轉成自由練習，把這袋綁完。</p><button id="retry-challenge" class="primary-button">重新挑戰 <span>↗</span></button><button id="continue-practice" class="secondary-button continue-practice">轉為自由練習，繼續打包</button></dialog></body>
+</html>
+

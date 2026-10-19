@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {TraceGesture,PullHold,EarBalance} from './dist/gesture-engine.js';
+const points=[{x:1,y:0},{x:1,y:1},{x:0,y:1},{x:-1,y:1},{x:-1,y:0}];
+const shortcut=new TraceGesture(points);shortcut.move(points.at(-1));assert.equal(shortcut.complete,false,'不能只拖到終點跳過繞圈');
+const trace=new TraceGesture(points);points.slice(1).forEach(p=>trace.move(p));assert.equal(trace.complete,true);assert.equal(trace.quality,1);
+const reversed=new TraceGesture(points);[...points].reverse().forEach(p=>reversed.move(p));assert.equal(reversed.complete,false,'反向穿點不能完成');
+const hold=new PullHold();hold.move(.73);assert.equal(hold.ready,false);hold.tick(.81);assert.equal(hold.ready,true,'需在張力區停留');hold.move(.3);hold.tick(.1);assert.equal(hold.ready,false,'鬆手前離開區域會失去穩定度');
+const slip=new PullHold();slip.move(1.1);slip.tick(.3);assert.equal(slip.slipped,true,'過度拉扯會滑脫');
+const balance=new EarBalance();balance.move('left',1);assert.equal(balance.ready,false,'只拉一耳不能收結');balance.move('right',.85);assert.equal(balance.ready,false);balance.move('right',.95);assert.equal(balance.ready,true);balance.move('left',1.3);assert.equal(balance.ready,false,'過拉也會失衡');
+console.log('PASS: 路徑不可跳點、順序穿圈、穩定張力、過拉滑脫、雙耳平衡。');

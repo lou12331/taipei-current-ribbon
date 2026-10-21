@@ -9,7 +9,8 @@ const isMobile = () => innerWidth <= 900;
 const bagInfo = {
   black: { name:'經典黑垃圾袋', caption:'01 — 經典黑垃圾袋', sub:'厚實袋身，一整週的垃圾都裝得下。', color:0x0d100e, roughness:.43, clearcoat:.4 },
   blue: { name:'臺北專用袋', caption:'02 — 臺北專用袋', sub:'隨袋徵收，分類好再打包。', color:0x087cac, roughness:.38, clearcoat:.4 },
-  linen: { name:'透明垃圾袋', caption:'03 — 透明垃圾袋・章東西', sub:'透明袋身，裝了什麼一眼就看到。', color:0xaebeb2, roughness:.38, clearcoat:.4 }
+  linen: { name:'透明垃圾袋', caption:'03 — 透明垃圾袋・章東西', sub:'透明袋身，裝了什麼一眼就看到。', color:0xaebeb2, roughness:.38, clearcoat:.4 },
+  pineapple: { name:'鳳梨(?)', caption:'04 — 鳳梨(?)・誰出的主意?', sub:'金黃鱗紋袋身配綠葉冠，綁上飄帶旺起來。', color:0xf6cf6e, roughness:.5, clearcoat:.25 }
 };
 const steps = [
   {name:'交叉穿帶', hint:'左帶跨過右帶，再從下方穿出',text:'按住左帶端，從右帶上方交叉，依序穿過 1 → 2 → 3，從結下穿出再放開。',kind:'trace',from:V(-.95,2.1,.9),to:V(.7,3.3,.9),side:0,gates:[V(-.48,2.5,.9),V(.15,2.88,.9),V(.7,3.3,.9)]},
@@ -19,7 +20,7 @@ const steps = [
   {name:'雙耳平衡', hint:'分別拉開兩耳，找到左右平衡',text:'分別把左右耳拉進虛線圈。兩邊都到位，且差距小於 13%，才能收結。',kind:'balance',from:V(.4,3.22,.9),to:V(1.0,3.28,.9),side:1}
 ];
 let state={phase:0,bag:'black',step:0,preview:5,qualities:[],left:50,right:50,tension:70};
-let renderer, scene, camera, model, ribbonGroup, bagMaterial, topMaterial, cityPrint, merchandise, clock;
+let renderer, scene, camera, model, ribbonGroup, bagMaterial, topMaterial, cityPrint, merchandise, crown, pineappleSkin, clock;
 let rotation=-.12, targetRotation=-.12, targetZoom=7.8, autoRotate=false;
 let drag=null, orbit=null, stepProgress=0;
 let handle=null, target=null, path=null, previewTimer=null, toastTimer=null;
@@ -86,6 +87,7 @@ function initScene(){
   const seam=new THREE.Mesh(new THREE.TorusGeometry(1.08,.012,5,100),bagMaterial);seam.rotation.x=Math.PI/2;seam.scale.y=.94;seam.position.y=.12;model.add(seam);
   const bottom=new THREE.Mesh(new THREE.CylinderGeometry(1.08,1.06,.06,100),bagMaterial);bottom.scale.z=.94;bottom.position.y=.105;bottom.receiveShadow=true;model.add(bottom);
   cityPrint=createCityPrint();cityPrint.visible=false;model.add(cityPrint);
+  crown=createCrown();crown.visible=false;model.add(crown);
   merchandise=createMerchandise(y=>bagRadius((y-.1)/3.02*3.12));model.add(merchandise);
   // Composite the supplied transparent print onto the ribbon's ivory satin base.
   new THREE.TextureLoader().load('assets/ribbon.png',texture=>{
@@ -136,6 +138,31 @@ function createCityPrint(){
   const g=new THREE.PlaneGeometry(1.94,.96,48,24),p=g.attributes.position;
   for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i)+1.12;const r=bagRadius((y-.1)/3.02*3.12);p.setXYZ(i,x,y,Math.sqrt(Math.max(0,r*r-x*x))*.94+.07);}
   g.computeVertexNormals();return new THREE.Mesh(g,new THREE.MeshStandardMaterial({map:texture,transparent:true,roughness:.6,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2}));
+}
+
+// Pineapple skin: golden diamond scales, each with a brown eye, wrapped round the bag body.
+function pineappleTexture(){
+  const c=document.createElement('canvas');c.width=c.height=256;const ctx=c.getContext('2d'),s=64;
+  ctx.fillStyle='#c98a24';ctx.fillRect(0,0,256,256);
+  for(let row=-1;row<=4;row++)for(let col=-1;col<=4;col++){
+    const x=col*s+(row%2?s/2:0),y=row*s/2+s/4;
+    const g=ctx.createRadialGradient(x,y-4,2,x,y,s*.5);g.addColorStop(0,'#f4cb52');g.addColorStop(.7,'#dfa634');g.addColorStop(1,'#a9701c');
+    ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(x,y-s/4+2);ctx.lineTo(x+s/2-3,y);ctx.lineTo(x,y+s/4-2);ctx.lineTo(x-s/2+3,y);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#6b4a1d';ctx.beginPath();ctx.ellipse(x,y+2,5,3.5,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#8c5c19';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(x-6,y-4);ctx.lineTo(x,y+1);ctx.lineTo(x+6,y-4);ctx.stroke();
+  }
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(6,5);return t;
+}
+// Spiky leaf crown sprouting from the gathered neck above the bow.
+function createCrown(){
+  const g=new THREE.Group(),mats=[0x3f6f2a,0x56873a,0x2f5a22].map(color=>new THREE.MeshStandardMaterial({color,roughness:.62,side:THREE.DoubleSide}));
+  const leaf=new THREE.ConeGeometry(.085,1,4,1);leaf.translate(0,.5,0);
+  for(let ring=0;ring<3;ring++)for(let i=0;i<9-ring*2;i++){
+    const phi=(i+ring*.5)/(9-ring*2)*Math.PI*2,m=new THREE.Mesh(leaf,mats[(i+ring)%3]);
+    m.scale.set(1,.95-ring*.18+(i%2)*.1,.32);m.rotation.set(0,phi,0,'YXZ');m.rotateX(.78-ring*.3);
+    m.position.set(Math.sin(phi)*.12,3.62+ring*.06,Math.cos(phi)*.12);m.castShadow=true;g.add(m);
+  }
+  return g;
 }
 
 // Ribbon: the bow is two continuous strands, A (starts on the left) and B (starts on the right).
@@ -324,7 +351,12 @@ function selectBag(key){
   state.bag=key;const b=bagInfo[key];bagMaterial.color.setHex(b.color);bagMaterial.roughness=b.roughness;bagMaterial.clearcoat=b.clearcoat;
   bagMaterial.bumpMap=noiseTexture(256,'plastic');bagMaterial.bumpScale=.006;bagMaterial.transparent=key==='linen';bagMaterial.opacity=key==='linen'?.36:1;bagMaterial.depthWrite=key!=='linen';bagMaterial.needsUpdate=true;
   topMaterial.copy(bagMaterial);
+  const pine=key==='pineapple';if(pine&&!pineappleSkin)pineappleSkin=pineappleTexture();
+  bagMaterial.map=pine?pineappleSkin:null;bagMaterial.bumpMap=pine?pineappleSkin:bagMaterial.bumpMap;bagMaterial.bumpScale=pine?.02:.006;bagMaterial.needsUpdate=true;
+  topMaterial.copy(bagMaterial);
   if(key==='linen')topMaterial.opacity=.55;
+  if(pine){topMaterial.map=null;topMaterial.color.setHex(0x4d7d30);}
+  crown.visible=pine;
   cityPrint.visible=key==='blue';
   merchandise.visible=key==='linen';model.traverse(c=>{if(c.isMesh&&(c.material===bagMaterial||c.material===topMaterial))c.castShadow=key!=='linen';});
   document.querySelectorAll('.bag-option').forEach(b=>{const active=b.dataset.bag===key;b.classList.toggle('selected',active);b.setAttribute('aria-pressed',String(active));});

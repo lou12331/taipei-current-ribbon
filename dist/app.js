@@ -12,6 +12,10 @@ const bagInfo = {
   linen: { name:'透明垃圾袋', caption:'03 — 透明垃圾袋・章東西', sub:'透明袋身，裝了什麼一眼就看到。', color:0xaebeb2, roughness:.38, clearcoat:.4 },
   pineapple: { name:'鳳梨(?)', caption:'04 — 鳳梨(?)・誰出的主意?', sub:'金黃鱗紋袋身配綠葉冠，綁上飄帶旺起來。', color:0xf6cf6e, roughness:.5, clearcoat:.25 }
 };
+const ribbonInfo = {
+  orange: { file:'assets/ribbon.png', plain:0xe67d42, sheen:'#f7d4ae' },
+  blue: { file:'assets/ribbon-blue.png', plain:0x0b5aa3, sheen:'#cfe0f2' }
+};
 const steps = [
   {name:'交叉穿帶', hint:'左帶跨過右帶，再從下方穿出',text:'按住左帶端，從右帶上方交叉，依序穿過 1 → 2 → 3，從結下穿出再放開。',kind:'trace',from:V(-.95,2.1,.9),to:V(.7,3.3,.9),side:0,gates:[V(-.48,2.5,.9),V(.15,2.88,.9),V(.7,3.3,.9)]},
   {name:'控力收緊', hint:'保持 65–82% 張力，穩住 0.8 秒',text:'把剛穿出的帶端往右上拉，在綠色張力區停留 0.8 秒把結收緊；過拉會滑脫。',kind:'hold',from:V(.7,3.3,.9),to:V(1.38,3.62,.9),side:1},
@@ -19,12 +23,12 @@ const steps = [
   {name:'繞圈穿結', hint:'繞過左耳根部，再從結下穿出',text:'捏住右帶中段，繞過左耳根部一圈，再從結下的洞穿出，拉成右耳。',kind:'trace',from:V(.62,2.3,.9),to:V(-.28,2.88,.9),side:1,gates:[V(.99,3.23,.9),V(.59,3.65,.9),V(-.04,3.57,.9),V(-.4,3.25,.9),V(-.28,2.88,.9)]},
   {name:'雙耳平衡', hint:'分別拉開兩耳，找到左右平衡',text:'分別把左右耳拉進虛線圈。兩邊都到位，且差距小於 13%，才能收結。',kind:'balance',from:V(.4,3.22,.9),to:V(1.0,3.28,.9),side:1}
 ];
-let state={phase:0,bag:'black',step:0,preview:5,qualities:[],left:50,right:50,tension:70};
+let state={phase:0,bag:'black',ribbon:'orange',step:0,preview:5,qualities:[],left:50,right:50,tension:70};
 let renderer, scene, camera, model, ribbonGroup, bagMaterial, topMaterial, cityPrint, merchandise, crown, pineappleSkin, clock;
 let rotation=-.12, targetRotation=-.12, targetZoom=7.8, autoRotate=false;
 let drag=null, orbit=null, stepProgress=0;
 let handle=null, target=null, path=null, previewTimer=null, toastTimer=null;
-let ribbonTexture, ribbonMaterial=null, knotMaterial=null, audioCtx=null, audioNodes=[];
+let ribbonTexture, ribbonTextures={}, ribbonMaterial=null, knotMaterial=null, audioCtx=null, audioNodes=[];
 let frameCount=0;
 let mechanic=null, markers=[], balanceHandles=[], grips=new Map(), gameLast=0, shake=0;
 const run={mode:'practice',time:90,elapsed:0,combo:0,maxCombo:0,slips:0,assists:0,earQuality:1,holdQuality:1,expired:false};
@@ -89,11 +93,7 @@ function initScene(){
   cityPrint=createCityPrint();cityPrint.visible=false;model.add(cityPrint);
   crown=createCrown();crown.visible=false;model.add(crown);
   merchandise=createMerchandise(y=>bagRadius((y-.1)/3.02*3.12));model.add(merchandise);
-  // Composite the supplied transparent print onto the ribbon's ivory satin base.
-  new THREE.TextureLoader().load('assets/ribbon.png',texture=>{
-    const c=document.createElement('canvas');c.width=texture.image.width;c.height=texture.image.height;const ctx=c.getContext('2d');ctx.fillStyle='#fff9e9';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(texture.image,0,0);
-    ribbonTexture=new THREE.CanvasTexture(c);ribbonTexture.colorSpace=THREE.SRGBColorSpace;ribbonTexture.anisotropy=renderer.capabilities.getMaxAnisotropy();ribbonTexture.wrapT=THREE.RepeatWrapping;if(ribbonMaterial){ribbonMaterial.map=ribbonTexture;ribbonMaterial.color.setHex(0xfff9ee);ribbonMaterial.needsUpdate=true;}drawRibbon();
-  },undefined,()=>toast('紋理載入失敗，暫以素色飄帶練習。'));
+  loadRibbon(state.ribbon);
   drawRibbon();resize();window.addEventListener('resize',resize);
   renderer.domElement.addEventListener('pointerdown',orbitStart);
   renderer.domElement.addEventListener('pointermove',orbitMove);
@@ -184,8 +184,27 @@ function resample(points){
   if(clean.length===2){const m=clean[0].clone().lerp(clean[1],.5);m.y-=.05;m.z+=.08;clean.splice(1,0,m);}
   return new THREE.CatmullRomCurve3(clean,false,'centripetal').getSpacedPoints(RIB_N-1);
 }
+// Composite the chosen ribbon's print onto an ivory satin base; textures are cached per ribbon.
+function loadRibbon(key){
+  if(ribbonTextures[key])return applyRibbon(key);
+  new THREE.TextureLoader().load(ribbonInfo[key].file,texture=>{
+    const c=document.createElement('canvas');c.width=texture.image.width;c.height=texture.image.height;const ctx=c.getContext('2d');ctx.fillStyle='#fff9e9';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(texture.image,0,0);
+    const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=renderer.capabilities.getMaxAnisotropy();t.wrapT=THREE.RepeatWrapping;ribbonTextures[key]=t;
+    if(state.ribbon===key)applyRibbon(key);
+  },undefined,()=>{if(state.ribbon===key){ribbonTexture=null;applyRibbon(key);}toast('紋理載入失敗，暫以素色飄帶練習。');});
+}
+function applyRibbon(key){
+  ribbonTexture=ribbonTextures[key]||null;
+  if(ribbonMaterial){ribbonMaterial.map=ribbonTexture;ribbonMaterial.color.setHex(ribbonTexture?0xfff9ee:ribbonInfo[key].plain);ribbonMaterial.sheenColor.set(ribbonInfo[key].sheen);ribbonMaterial.needsUpdate=true;}
+  drawRibbon();
+}
+function selectRibbon(key){
+  state.ribbon=key;loadRibbon(key);fabricSound();
+  document.querySelectorAll('.ribbon-option').forEach(b=>{const active=b.dataset.ribbon===key;b.classList.toggle('selected',active);b.setAttribute('aria-pressed',String(active));});
+}
 function ensureRibbonMaterial(){
-  if(!ribbonMaterial)ribbonMaterial=new THREE.MeshPhysicalMaterial({map:ribbonTexture||null,color:ribbonTexture?0xfff9ee:0xe67d42,side:THREE.DoubleSide,roughness:.58,metalness:.03,clearcoat:.13,sheen:.7,sheenColor:new THREE.Color('#f7d4ae'),sheenRoughness:.5});
+  const info=ribbonInfo[state.ribbon];
+  if(!ribbonMaterial)ribbonMaterial=new THREE.MeshPhysicalMaterial({map:ribbonTexture||null,color:ribbonTexture?0xfff9ee:info.plain,side:THREE.DoubleSide,roughness:.58,metalness:.03,clearcoat:.13,sheen:.7,sheenColor:new THREE.Color(info.sheen),sheenRoughness:.5});
   return ribbonMaterial;
 }
 function makeStrand(name,opts){
@@ -522,6 +541,7 @@ function saveImage(){
 }
 
 document.querySelectorAll('.bag-option').forEach(b=>b.onclick=()=>selectBag(b.dataset.bag));
+document.querySelectorAll('.ribbon-option').forEach(b=>b.onclick=()=>selectRibbon(b.dataset.ribbon));
 $('start').onclick=teach;$('back').onclick=()=>setPhase(0);$('again').onclick=()=>setPhase(0);
 $('finish').onclick=finish;$('save-image').onclick=saveImage;$('reset-view').onclick=resetView;
 $('rotate').onclick=()=>{autoRotate=!autoRotate;$('rotate').classList.toggle('active',autoRotate);};

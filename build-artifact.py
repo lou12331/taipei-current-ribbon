@@ -5,7 +5,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 d = os.path.join(here, 'dist')
 out = sys.argv[1]
 os.makedirs(os.path.join(out, 'assets'), exist_ok=True)
-for f in ('ribbon.png', 'merch-mark-blurred.png'):
+for f in ('ribbon.png', 'ribbon-blue.png', 'merch-mark-blurred.png'):
     shutil.copy(os.path.join(d, 'assets', f), os.path.join(out, 'assets', f))
 r = lambda f: open(os.path.join(d, f), encoding='utf8').read()
 html, css = r('index.html'), r('style.css')
